@@ -3,8 +3,8 @@ const std = @import("std");
 fn useSdl(step: *std.build.LibExeObjStep) void {
     step.addIncludeDir("../sdl2/SDL/include");
     step.addLibPath("../sdl2/SDL/lib/x64");
-    step.addIncludeDir("SDL2_ttf/include");
-    step.addLibPath("SDL2_ttf/lib/x64");
+    step.addIncludeDir("SDL_ttf/include");
+    step.addLibPath("SDL_ttf/lib/x64");
     step.linkSystemLibrary("SDL2");
     step.linkSystemLibrary("c");
 }
