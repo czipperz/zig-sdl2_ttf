@@ -1,5 +1,5 @@
 const std = @import("std");
-const testing = std.testing;
+const sdl2 = @import("sdl2");
 const c = @cImport(@cInclude("SDL_ttf.h"));
 
 ////////////// Errors ////////////////
@@ -25,6 +25,8 @@ pub fn linkedVersion() sdl2.Version {
 
 pub const Font = c.TTF_Font;
 
+pub const Color = c.SDL_Color;
+
 ////////////// Initialization ////////////////
 
 pub fn init() !void {
@@ -48,17 +50,17 @@ pub fn byteSwappedUNICODE(swapped: bool) void {
 /// `file` is the path to the file.
 /// `point_size` is expressed at 72DPI.
 /// `face_index` controls which face should be opened if multiple are available.
-///              If not specified then the first face will be selected.
-pub fn openFont(file: [*:0]const u8, point_size: i32, face_index: ?i64) ?*TTF_Font {
-    return c.TTF_OpenFontIndex(file, point_size, face_index orelse 0);
+///              Use `0` to select the first face.
+pub fn openFont(file: [*:0]const u8, point_size: i32, face_index: i64) ?*Font {
+    return c.TTF_OpenFontIndex(file, point_size, @intCast(c_long, face_index));
 }
 
 /// Open font by reading a file.
 /// `src` is the source to read from.
 /// See `openFont` for documentation of other arguments.
-pub fn openFontRW(src: *sdl2.RWops, point_size: i32, face_index: ?i64) ?*TTF_Font {
+pub fn openFontRW(src: *sdl2.RWops, point_size: i32, face_index: i64) ?*Font {
     // Note: don't provide `freesrc` because we can just use `defer`.
-    return c.TTF_OpenFontRW(src, 0, point_size, face_index orelse 0);
+    return c.TTF_OpenFontRW(src, 0, point_size, @intCast(c_long, face_index));
 }
 
 pub fn closeFont(font: *Font) void {
@@ -233,57 +235,57 @@ pub const renderUNICODE = renderTextShaded;
 
 /// Render text to a 8-bit palettized surface at *fast* quality with the given font and color.
 
-pub fn renderTextSolid(font: *Font, text: [*:0]const u8, fg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderText_Solid(font, text, fg);
+pub fn renderTextSolid(font: *Font, text: [*:0]const u8, fg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderText_Solid(font, text, fg));
 }
-pub fn renderUTF8Solid(font: *Font, text: [*:0]const u8, fg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderUTF8_Solid(font, text, fg);
+pub fn renderUTF8Solid(font: *Font, text: [*:0]const u8, fg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderUTF8_Solid(font, text, fg));
 }
-pub fn renderUNICODESolid(font: *Font, text: [*:0]const u16, fg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderUNICODE_Solid(font, text, fg);
+pub fn renderUNICODESolid(font: *Font, text: [*:0]const u16, fg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderUNICODE_Solid(font, text, fg));
 }
-pub fn renderGlyphSolid(font: *Font, ch: u16, fg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderGlyph_Solid(font, ch, fg);
+pub fn renderGlyphSolid(font: *Font, ch: u16, fg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderGlyph_Solid(font, ch, fg));
 }
 
 /// Render text to a 8-bit palettized surface at high quality with the given font and colors.
 
-pub fn renderTextShaded(font: *Font, text: [*:0]const u8, fg: sdl2.Color, bg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderText_Shaded(font, text, fg, bg);
+pub fn renderTextShaded(font: *Font, text: [*:0]const u8, fg: Color, bg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderText_Shaded(font, text, fg, bg));
 }
-pub fn renderUTF8Shaded(font: *Font, text: [*:0]const u8, fg: sdl2.Color, bg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderUTF8_Shaded(font, text, fg, bg);
+pub fn renderUTF8Shaded(font: *Font, text: [*:0]const u8, fg: Color, bg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderUTF8_Shaded(font, text, fg, bg));
 }
-pub fn renderUNICODEShaded(font: *Font, text: [*:0]const u16, fg: sdl2.Color, bg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderUNICODE_Shaded(font, text, fg, bg);
+pub fn renderUNICODEShaded(font: *Font, text: [*:0]const u16, fg: Color, bg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderUNICODE_Shaded(font, text, fg, bg));
 }
-pub fn renderGlyphShaded(font: *Font, ch: u16, fg: sdl2.Color, bg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderGlyph_Shaded(font, ch, fg, bg);
+pub fn renderGlyphShaded(font: *Font, ch: u16, fg: Color, bg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderGlyph_Shaded(font, ch, fg, bg));
 }
 
 /// Render text to a 32-bit ARGB surface at high quality with alpha blending.
 
-pub fn renderTextBlended(font: *Font, text: [*:0]const u8, fg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderText_Blended(font, text, fg);
+pub fn renderTextBlended(font: *Font, text: [*:0]const u8, fg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderText_Blended(font, text, fg));
 }
-pub fn renderUTF8Blended(font: *Font, text: [*:0]const u8, fg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderUTF8_Blended(font, text, fg);
+pub fn renderUTF8Blended(font: *Font, text: [*:0]const u8, fg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderUTF8_Blended(font, text, fg));
 }
-pub fn renderUNICODEBlended(font: *Font, text: [*:0]const u16, fg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderUNICODE_Blended(font, text, fg);
+pub fn renderUNICODEBlended(font: *Font, text: [*:0]const u16, fg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderUNICODE_Blended(font, text, fg));
 }
-pub fn renderGlyphBlended(font: *Font, ch: u16, fg: sdl2.Color) ?*sdl2.Surface {
-    return c.TTF_RenderGlyph_Blended(font, ch, fg);
+pub fn renderGlyphBlended(font: *Font, ch: u16, fg: Color) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderGlyph_Blended(font, ch, fg));
 }
 
 /// Same as `renderTextBlended` except wraps on `wrap_length` pixels.
 
-pub fn renderTextBlendedWrapped(font: *Font, text: [*:0]const u8, fg: sdl2.Color, wrap_length: u32) ?*sdl2.Surface {
-    return c.TTF_RenderText_BlendedWrapped(font, text, fg, wrap_length);
+pub fn renderTextBlendedWrapped(font: *Font, text: [*:0]const u8, fg: Color, wrap_length: u32) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderText_Blended_Wrapped(font, text, fg, wrap_length));
 }
-pub fn renderUTF8BlendedWrapped(font: *Font, text: [*:0]const u8, fg: sdl2.Color, wrap_length: u32) ?*sdl2.Surface {
-    return c.TTF_RenderUTF8_BlendedWrapped(font, text, fg, wrap_length);
+pub fn renderUTF8BlendedWrapped(font: *Font, text: [*:0]const u8, fg: Color, wrap_length: u32) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderUTF8_Blended_Wrapped(font, text, fg, wrap_length));
 }
-pub fn renderUNICODEBlendedWrapped(font: *Font, text: [*:0]const u16, fg: sdl2.Color, wrap_length: u32) ?*sdl2.Surface {
-    return c.TTF_RenderUNICODE_BlendedWrapped(font, text, fg, wrap_length);
+pub fn renderUNICODEBlendedWrapped(font: *Font, text: [*:0]const u16, fg: Color, wrap_length: u32) ?*sdl2.Surface {
+    return @ptrCast(?*sdl2.Surface, c.TTF_RenderUNICODE_Blended_Wrapped(font, text, fg, wrap_length));
 }
